@@ -19,7 +19,7 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "proto:install": "yarn add git+https://github.com/gus-messagi/digital-wallet-proto.git",
-    "proto:auth": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/digital-wallet-proto/proto --ts_proto_out=src/auth/ node_modules/digital-wallet-proto/proto/auth.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb"
+    "proto:auth": "protoc --plugin=node_modules/.bin/protoc-gen-ts_proto -I=./node_modules/digital-wallet-proto/proto --ts_proto_out=src/infrastructure/protos node_modules/digital-wallet-proto/proto/auth.proto --ts_proto_opt=nestJs=true --ts_proto_opt=fileSuffix=.pb"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.8.17",
@@ -28,6 +28,8 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/microservices": "^10.0.5",
     "@nestjs/platform-express": "^10.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
     "digital-wallet-proto": "git+https://github.com/gus-messagi/digital-wallet-proto.git",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1"
