@@ -22,7 +22,7 @@ export class UserEntity {
     salt: number,
   ): Result<UserEntity, string> {
     if (user.password !== user.confirmPassword) {
-      return new Err(`Password's doens't match`);
+      return new Err(`Password's doesn't match`);
     }
 
     const entity = new UserEntity({
