@@ -15,6 +15,18 @@ jest.mock('bcrypt', () => ({
 describe('AuthService', () => {
   let authService: AuthService;
 
+  const mockUsers = [
+    {
+      id: '123-abc',
+      email: 'user@email.com',
+      password: '123456',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ];
+
+  const mockHours = 3600 * 1000 * 8;
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -23,6 +35,11 @@ describe('AuthService', () => {
           provide: JwtService,
           useValue: {
             sign: jest.fn(() => 'TOKEN'),
+            decode: jest.fn(() => ({
+              id: '123-abc',
+              iat: Date.now(),
+              exp: (Date.now() + mockHours) / 1000,
+            })),
           },
         },
         {
@@ -34,17 +51,16 @@ describe('AuthService', () => {
               password: user.password,
             })),
             findByEmail: jest.fn((email) => {
-              const users = [
-                {
-                  id: crypto.randomUUID().toString(),
-                  email: 'user@email.com',
-                  password: '123456',
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                },
-              ];
+              const user = mockUsers.find((user) => user.email === email);
 
-              const user = users.find((user) => user.email === email);
+              if (!user) {
+                return null;
+              }
+
+              return new UserEntity(user);
+            }),
+            findById: jest.fn((id) => {
+              const user = mockUsers.find((user) => user.id === id);
 
               if (!user) {
                 return null;
@@ -142,6 +158,42 @@ describe('AuthService', () => {
 
       expect(response.ok).toBe(false);
       expect(response.val).toBe('Invalid credentials');
+    });
+  });
+
+  describe('validation', () => {
+    it('should validate succesfully user', async () => {
+      const token = 'USER_TOKEN';
+      const response = await authService.validation(token);
+
+      expect(response.ok).toBe(true);
+      expect(response.val).toBe('123-abc');
+    });
+
+    it('should unauthorize user because expired token', async () => {
+      const token = 'USER_TOKEN';
+
+      jest.spyOn(authService['jwt'], 'decode').mockReturnValue({
+        id: '123-abc',
+        iat: Date.now(),
+        exp: (Date.now() - mockHours) / 1000,
+      });
+
+      const response = await authService.validation(token);
+
+      expect(response.ok).toBe(false);
+      expect(response.val).toBe('Token expired');
+    });
+
+    it('should unauthorize user because was not found userId', async () => {
+      const token = 'USER_TOKEN';
+
+      jest.spyOn(authService['repository'], 'findById').mockReturnValue(null);
+
+      const response = await authService.validation(token);
+
+      expect(response.ok).toBe(false);
+      expect(response.val).toBe(`User doesn't exist`);
     });
   });
 });

@@ -34,7 +34,7 @@ export interface ValidationRequest {
 export interface ValidationResponse {
   status: number;
   error: string[];
-  userId: number;
+  userId: string;
 }
 
 export const AUTH_PACKAGE_NAME = "auth";

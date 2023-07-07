@@ -58,4 +58,26 @@ export class AuthService {
 
     return Ok(token);
   }
+
+  async validation(token: string): Promise<Result<string, string>> {
+    const decoded = this.jwt.decode(token) as {
+      id: string;
+      exp: number;
+      iat: number;
+    };
+
+    const isTokenExpired = Date.now() > decoded.exp * 1000;
+
+    if (isTokenExpired) {
+      return Err('Token expired');
+    }
+
+    const userFound = await this.repository.findById(decoded.id);
+
+    if (!userFound) {
+      return Err(`User doesn't exist`);
+    }
+
+    return Ok(userFound.id);
+  }
 }

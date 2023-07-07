@@ -22,4 +22,12 @@ export class UserImplRepository implements UserRepository {
 
     return new UserEntity(user);
   }
+
+  async findById(id: string): Promise<UserEntity | null> {
+    const user = await this.db.user.findFirst({ where: { id } });
+
+    if (!user) return null;
+
+    return new UserEntity(user);
+  }
 }
