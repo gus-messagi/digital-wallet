@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { INestMicroservice, Injectable, OnModuleInit } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 
 const prismaSetup: Prisma.PrismaClientOptions = {
@@ -6,8 +6,18 @@ const prismaSetup: Prisma.PrismaClientOptions = {
 };
 
 @Injectable()
-export class PrismaConnector extends PrismaClient {
+export class PrismaConnector extends PrismaClient implements OnModuleInit {
   constructor() {
     super(prismaSetup);
+  }
+
+  async onModuleInit() {
+    await this.$connect();
+  }
+
+  async enableShutdownHooks(app: INestMicroservice) {
+    this.$on('beforeExit', async () => {
+      await app.close();
+    });
   }
 }
