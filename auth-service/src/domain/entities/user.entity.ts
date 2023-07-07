@@ -2,6 +2,15 @@ import { Exclude } from 'class-transformer';
 import { Err, Ok, Result } from 'ts-results';
 import * as bcrypt from 'bcrypt';
 
+interface UserProps {
+  id?: string;
+  email: string;
+  password: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date;
+}
+
 export class UserEntity {
   id?: string;
   email: string;
@@ -13,7 +22,7 @@ export class UserEntity {
   updatedAt: Date;
   deletedAt?: Date;
 
-  constructor(props: UserEntity) {
+  constructor(props: UserProps) {
     Object.assign(this, props);
   }
 
@@ -33,5 +42,9 @@ export class UserEntity {
     });
 
     return new Ok(entity);
+  }
+
+  public verifyPassword(password: string) {
+    return bcrypt.compareSync(password, this.password);
   }
 }

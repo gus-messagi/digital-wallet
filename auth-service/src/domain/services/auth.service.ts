@@ -42,4 +42,20 @@ export class AuthService {
 
     return Ok(token);
   }
+
+  async signIn(user: AuthDTO): Promise<Result<string, string>> {
+    const userFound = await this.repository.findByEmail(user.email);
+
+    if (!userFound) {
+      return Err('Invalid credentials');
+    }
+
+    if (!userFound.verifyPassword(user.password)) {
+      return Err('Invalid credentials');
+    }
+
+    const token = this.jwt.sign({ id: userFound.id });
+
+    return Ok(token);
+  }
 }

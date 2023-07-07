@@ -18,6 +18,8 @@ export class UserImplRepository implements UserRepository {
   async findByEmail(email: string): Promise<UserEntity | null> {
     const user = await this.db.user.findFirst({ where: { email } });
 
-    return user;
+    if (!user) return null;
+
+    return new UserEntity(user);
   }
 }

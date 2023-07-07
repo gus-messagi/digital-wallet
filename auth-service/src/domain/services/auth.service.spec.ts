@@ -4,6 +4,13 @@ import { JwtService } from '@nestjs/jwt';
 import { UserImplRepository } from 'src/infrastructure/data/repositories/user-impl.repository';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
+import { UserEntity } from '../entities/user.entity';
+
+jest.mock('bcrypt', () => ({
+  hashSync: (password: string) => password,
+  compareSync: (passwordRequest: string, userPassword: string) =>
+    passwordRequest === userPassword,
+}));
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -29,13 +36,21 @@ describe('AuthService', () => {
             findByEmail: jest.fn((email) => {
               const users = [
                 {
-                  id: crypto.randomUUID(),
+                  id: crypto.randomUUID().toString(),
                   email: 'user@email.com',
                   password: '123456',
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
                 },
               ];
 
-              return users.find((user) => user.email === email);
+              const user = users.find((user) => user.email === email);
+
+              if (!user) {
+                return null;
+              }
+
+              return new UserEntity(user);
             }),
           },
         },
@@ -89,6 +104,44 @@ describe('AuthService', () => {
 
       expect(response.ok).toBe(false);
       expect(response.val).toBe(`Password's doesn't match`);
+    });
+  });
+
+  describe('signIn', () => {
+    it('should authenticate an user', async () => {
+      const user = {
+        email: 'user@email.com',
+        password: '123456',
+      };
+
+      const response = await authService.signIn(user);
+
+      expect(response.ok).toBe(true);
+      expect(response.val).toBe('TOKEN');
+    });
+
+    it('should return err because of wrong email', async () => {
+      const user = {
+        email: 'wrong@email.com',
+        password: '123456',
+      };
+
+      const response = await authService.signIn(user);
+
+      expect(response.ok).toBe(false);
+      expect(response.val).toBe('Invalid credentials');
+    });
+
+    it('should return err because of wrong password', async () => {
+      const user = {
+        email: 'user@email.com',
+        password: '1234567',
+      };
+
+      const response = await authService.signIn(user);
+
+      expect(response.ok).toBe(false);
+      expect(response.val).toBe('Invalid credentials');
     });
   });
 });

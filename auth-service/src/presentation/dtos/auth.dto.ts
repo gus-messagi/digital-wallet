@@ -1,5 +1,8 @@
 import { IsEmail, IsString, MinLength } from 'class-validator';
-import { SignUpRequest } from 'src/infrastructure/protos/auth.pb';
+import {
+  SignInRequest,
+  SignUpRequest,
+} from 'src/infrastructure/protos/auth.pb';
 
 export class SignUpRequestDTO implements SignUpRequest {
   @IsEmail()
@@ -12,4 +15,13 @@ export class SignUpRequestDTO implements SignUpRequest {
   @IsString()
   @MinLength(6)
   public readonly confirmPassword: string;
+}
+
+export class SignInRequestDTO implements SignInRequest {
+  @IsEmail()
+  public readonly email: string;
+
+  @IsString()
+  @MinLength(6)
+  public readonly password: string;
 }
