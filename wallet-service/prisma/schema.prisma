@@ -10,22 +10,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Action {
+enum Operation {
   deposit
-  withdrawal
+  withdraw
   purchase
   reversal
   cancellation
 }
 
 model Transaction {
-  id        String @id @default(uuid())
-  user_id   String @db.Uuid()
+  id                  String        @id @default(uuid())
+  userId              String        @db.Uuid() @map("user_id")
+  parentTransactionId String?       @db.Uuid() @map("parent_transaction_id") @unique
+  operation           Operation
+  amount              Float
 
-  action    Action
-  amount    Int
+  createdAt           DateTime      @map("created_at") @default(now())
 
-  createdAt DateTime @map("created_at") @default(now())
+  transaction         Transaction?  @relation("fk_parent_transaction")
+  parentTransaction   Transaction?  @relation("fk_parent_transaction", fields: [parentTransactionId], references: [id])
 
   @@map("transactions")
 }

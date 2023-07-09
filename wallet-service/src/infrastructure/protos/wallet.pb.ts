@@ -7,9 +7,9 @@ export const protobufPackage = "wallet";
 export enum Operation {
   deposit = 0,
   withdraw = 1,
-  cancellation = 2,
+  purchase = 2,
   reversal = 3,
-  purchase = 4,
+  cancellation = 4,
   UNRECOGNIZED = -1,
 }
 
@@ -17,7 +17,7 @@ export interface TransactionRequest {
   userId: string;
   operation: Operation;
   transactionId?: string | undefined;
-  amount: number;
+  amount?: number | undefined;
 }
 
 export interface TransactionResponse {

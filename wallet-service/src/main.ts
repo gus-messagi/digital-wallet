@@ -11,7 +11,7 @@ async function bootstrap() {
   const app = await NestFactory.createMicroservice(AppModule, {
     transport: Transport.GRPC,
     options: {
-      url: '0.0.0.0:50051',
+      url: '0.0.0.0:50052',
       package: protobufPackage,
       protoPath: join('node_modules/digital-wallet-proto/proto/wallet.proto'),
     },
