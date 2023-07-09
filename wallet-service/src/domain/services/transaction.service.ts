@@ -12,9 +12,13 @@ import { Result } from 'ts-results';
 import { CancellationStrategy } from '../strategies/cancellation.strategy';
 import { WalletService } from './wallet.service';
 import { ReversalStrategy } from '../strategies/reversal.strategy';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class TransactionService {
+  @Inject('rabbitmq-module')
+  private readonly client: ClientProxy;
+
   @Inject(TransactionImplRepository)
   private readonly repository: TransactionRepository;
 
@@ -47,7 +51,20 @@ export class TransactionService {
     );
 
     this.setStrategy(resolver);
+    const result = await this.strategy.handle(transactionEntity);
 
-    return await this.strategy.handle(transactionEntity);
+    if (result.err) return result;
+
+    const transactionCreated = result.unwrap();
+
+    this.client.emit('transaction_created', {
+      userId: transactionCreated.userId,
+      transaction: {
+        id: transactionCreated.id,
+        amount: transactionCreated.amount,
+      },
+    });
+
+    return result;
   }
 }
