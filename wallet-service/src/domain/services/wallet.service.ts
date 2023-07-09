@@ -14,7 +14,7 @@ export class WalletService {
 
     if (!transactions) return 0;
 
-    return transactions.reduce((acc, cur) => {
+    const balance = transactions.reduce((acc, cur) => {
       if (cur.operation === Operation.CANCELLATION) return acc;
 
       if ([Operation.DEPOSIT, Operation.REVERSAL].includes(cur.operation)) {
@@ -27,5 +27,7 @@ export class WalletService {
 
       return acc;
     }, 0);
+
+    return balance;
   }
 }
