@@ -9,13 +9,8 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import {
-  TransactionRequest,
-  TransactionResponse,
-  WALLET_SERVICE_NAME,
-  WalletServiceClient,
-} from './wallet.pb';
-import { Observable, firstValueFrom } from 'rxjs';
+import { WALLET_SERVICE_NAME, WalletServiceClient } from './wallet.pb';
+import { firstValueFrom } from 'rxjs';
 import { ClientGrpc } from '@nestjs/microservices';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Request, Response } from 'express';
@@ -33,10 +28,19 @@ export class WalletController implements OnModuleInit {
   }
 
   @Post('transaction')
+  @UseGuards(AuthGuard)
   async transaction(
-    @Body() body: TransactionRequest,
-  ): Promise<Observable<TransactionResponse>> {
-    return this.serviceClient.transaction(body);
+    @Req() request: Request & { user: string },
+    @Res() response: Response,
+  ): Promise<Response> {
+    const body = request.body;
+    const userId = request.user;
+
+    const { status } = await firstValueFrom(
+      this.serviceClient.transaction({ ...body, userId }),
+    );
+
+    return response.status(status).json({ status });
   }
 
   @Get('balance')
