@@ -62,6 +62,7 @@ export class TransactionService {
       transaction: {
         id: transactionCreated.id,
         amount: transactionCreated.amount,
+        operation: transactionCreated.operation,
       },
     });
 

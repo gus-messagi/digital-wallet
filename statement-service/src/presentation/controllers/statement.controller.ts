@@ -13,7 +13,7 @@ export class StatementController {
     @Payload() data: StatementDTO,
     @Ctx() context: RmqContext,
   ) {
-    console.log(`Data received: ${data}`);
+    console.log(`Data received: ${JSON.stringify(data)}`);
     const channel = context.getChannelRef();
     const originalMessage = context.getMessage();
 

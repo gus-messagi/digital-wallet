@@ -36,11 +36,11 @@ export class WalletController implements OnModuleInit {
     const body = request.body;
     const userId = request.user;
 
-    const { status } = await firstValueFrom(
+    const { status, error } = await firstValueFrom(
       this.serviceClient.transaction({ ...body, userId }),
     );
 
-    return response.status(status).json({ status });
+    return response.status(status).json({ status, error });
   }
 
   @Get('balance')
@@ -51,11 +51,11 @@ export class WalletController implements OnModuleInit {
   ): Promise<Response> {
     const userId = request.user;
 
-    const { balance, status } = await firstValueFrom(
+    const { balance, status, error } = await firstValueFrom(
       this.serviceClient.balance({ userId }),
     );
 
-    const mapToView = { status, balance: Number(balance.toFixed(2)) };
+    const mapToView = { status, balance: Number(balance.toFixed(2)), error };
 
     return response.status(status).json(mapToView);
   }
