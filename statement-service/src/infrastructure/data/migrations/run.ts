@@ -4,7 +4,7 @@ import { Client } from 'pg';
 
 const client = new Client({
   connectionString:
-    'postgres://postgres:mysecretpassword@localhost:5432/statements',
+    'postgres://postgres:mysecretpassword@localhost:5432/statement',
 });
 
 client.connect().then(async () => {

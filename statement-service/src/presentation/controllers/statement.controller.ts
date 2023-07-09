@@ -1,20 +1,23 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Inject } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { StatementDTO } from 'src/domain/dtos/statement.dto';
+import { StatementService } from 'src/domain/services/statement.service';
 
 @Controller()
 export class StatementController {
+  @Inject(StatementService)
+  private readonly service: StatementService;
+
   @EventPattern('transaction_created')
   public async handle(
     @Payload() data: StatementDTO,
     @Ctx() context: RmqContext,
   ) {
-    console.log({ data });
+    console.log(`Data received: ${data}`);
     const channel = context.getChannelRef();
     const originalMessage = context.getMessage();
 
-    console.log({ channel, originalMessage });
-    console.log('data', data);
+    await this.service.create(data);
 
     channel.ack(originalMessage);
   }
