@@ -1,0 +1,21 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Statement {
+  id                  String        @id @default(uuid())
+  userId              String        @db.Uuid() @map("user_id")
+  transactionId       String        @db.Uuid() @map("transaction_id")
+  lastAmount          Float                    @map("last_amount")
+  currentAmount       Float                    @map("current_amount")
+
+  @@map("statements")
+}
