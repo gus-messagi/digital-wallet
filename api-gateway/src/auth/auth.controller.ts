@@ -1,12 +1,8 @@
-import { Body, Controller, Inject, Post } from '@nestjs/common';
-import {
-  SignInRequest,
-  SignInResponse,
-  SignUpRequest,
-  SignUpResponse,
-} from './auth.pb';
-import { Observable } from 'rxjs';
+import { Body, Controller, Inject, Post, Res } from '@nestjs/common';
+import { SignInRequest, SignUpRequest } from './auth.pb';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from './auth.service';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -16,14 +12,26 @@ export class AuthController {
   @Post('sign-in')
   async signIn(
     @Body() body: SignInRequest,
-  ): Promise<Observable<SignInResponse>> {
-    return this.service.serviceClient.signIn(body);
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<void> {
+    const { token, status } = await firstValueFrom(
+      this.service.serviceClient.signIn(body),
+    );
+
+    response.cookie('token', token);
+    response.status(status);
   }
 
   @Post('sign-up')
   async signUp(
     @Body() body: SignUpRequest,
-  ): Promise<Observable<SignUpResponse>> {
-    return this.service.serviceClient.signUp(body);
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<void> {
+    const { token, status } = await firstValueFrom(
+      this.service.serviceClient.signUp(body),
+    );
+
+    response.cookie('token', token);
+    response.status(status);
   }
 }
