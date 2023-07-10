@@ -3,9 +3,11 @@ import {
   IsNotEmpty,
   IsNumber,
   IsOptional,
+  IsString,
   IsUUID,
 } from 'class-validator';
 import {
+  GetTransactionsRequest,
   Operation,
   TransactionRequest,
 } from 'src/infrastructure/protos/wallet.pb';
@@ -27,4 +29,14 @@ export class TransactionRequestDTO implements TransactionRequest {
   @IsNumber()
   @IsOptional()
   public readonly amount?: number;
+}
+
+export class GetTransactionsRequestDTO implements GetTransactionsRequest {
+  @IsString()
+  @IsNotEmpty()
+  public readonly userId: string;
+
+  @IsString()
+  @IsNotEmpty()
+  public readonly maxDate: string;
 }

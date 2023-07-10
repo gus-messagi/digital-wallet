@@ -1,10 +1,15 @@
 import { Controller, HttpStatus, Inject } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import {
+  GetTransactionsResponse,
+  TransactionItem,
   TransactionResponse,
   WALLET_SERVICE_NAME,
 } from 'src/infrastructure/protos/wallet.pb';
-import { TransactionRequestDTO } from '../dtos/transaction.dto';
+import {
+  GetTransactionsRequestDTO,
+  TransactionRequestDTO,
+} from '../dtos/transaction.dto';
 import { TransactionService } from 'src/domain/services/transaction.service';
 import { Operation } from 'src/domain/enums/transaction.enum';
 
@@ -12,6 +17,34 @@ import { Operation } from 'src/domain/enums/transaction.enum';
 export class TransactionController {
   @Inject(TransactionService)
   private readonly service: TransactionService;
+
+  @GrpcMethod(WALLET_SERVICE_NAME, 'GetTransactions')
+  async getTransactions(
+    payload: GetTransactionsRequestDTO,
+  ): Promise<GetTransactionsResponse> {
+    const mapToDomain = {
+      ...payload,
+      maxDate: new Date(payload.maxDate),
+    };
+
+    const response = await this.service.getTransactions(mapToDomain);
+
+    if (response.err) {
+      return {
+        status: HttpStatus.NOT_FOUND,
+        error: [response.val],
+        items: [],
+      };
+    }
+
+    const items = response.unwrap() as unknown as TransactionItem[];
+
+    return {
+      status: HttpStatus.OK,
+      error: null,
+      items,
+    };
+  }
 
   @GrpcMethod(WALLET_SERVICE_NAME, 'Transaction')
   async operation(

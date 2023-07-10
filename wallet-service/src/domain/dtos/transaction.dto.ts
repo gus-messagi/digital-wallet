@@ -16,3 +16,8 @@ export interface CreateTransactionDTO {
   parentTransactionId?: string;
   createdAt: Date;
 }
+
+export interface GetTransactionsDTO {
+  userId: string;
+  maxDate: Date;
+}

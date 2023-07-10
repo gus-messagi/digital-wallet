@@ -14,4 +14,8 @@ export interface TransactionRepository {
     userId: string,
   ) => Promise<TransactionsBalanceGroupedByOperation[]>;
   findByParentId: (parentId: string) => Promise<TransactionEntity | null>;
+  findByUserIdAndFilter: (
+    userId: string,
+    maxDate: Date,
+  ) => Promise<TransactionEntity[] | null>;
 }

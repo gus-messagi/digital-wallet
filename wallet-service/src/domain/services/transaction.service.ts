@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { TransactionDTO } from '../dtos/transaction.dto';
+import { GetTransactionsDTO, TransactionDTO } from '../dtos/transaction.dto';
 import { TransactionEntity } from '../entities/transaction.entity';
 import { Operation } from '../enums/transaction.enum';
 import { Strategy } from '../strategies/interfaces/strategy.interface';
@@ -8,7 +8,7 @@ import { TransactionImplRepository } from 'src/infrastructure/data/repositories/
 import { TransactionRepository } from '../repositories/transaction.repository';
 import { WithdrawStrategy } from '../strategies/withdraw.strategy';
 import { PurchaseStrategy } from '../strategies/purchase.strategy';
-import { Result } from 'ts-results';
+import { Err, Ok, Result } from 'ts-results';
 import { CancellationStrategy } from '../strategies/cancellation.strategy';
 import { WalletService } from './wallet.service';
 import { ReversalStrategy } from '../strategies/reversal.strategy';
@@ -67,5 +67,20 @@ export class TransactionService {
     });
 
     return result;
+  }
+
+  async getTransactions(
+    filter: GetTransactionsDTO,
+  ): Promise<Result<TransactionEntity[], string>> {
+    const transactions = await this.repository.findByUserIdAndFilter(
+      filter.userId,
+      filter.maxDate,
+    );
+
+    if (!transactions) {
+      return Err('No transactions');
+    }
+
+    return Ok(transactions);
   }
 }

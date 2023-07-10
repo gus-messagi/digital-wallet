@@ -68,4 +68,23 @@ export class TransactionImplRepository implements TransactionRepository {
       operation: Operation[operation.toUpperCase()],
     }));
   }
+
+  async findByUserIdAndFilter(
+    userId: string,
+    maxDate: Date,
+  ): Promise<TransactionEntity[]> {
+    const transactions = await this.db.transaction.findMany({
+      where: { userId, createdAt: { gte: maxDate } },
+    });
+
+    if (transactions.length === 0) return null;
+
+    return transactions.map(
+      (transaction) =>
+        new TransactionEntity({
+          ...transaction,
+          operation: Operation[transaction.operation.toUpperCase()],
+        }),
+    );
+  }
 }
