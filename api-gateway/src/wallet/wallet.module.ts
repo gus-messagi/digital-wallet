@@ -1,6 +1,5 @@
 import { Global, Module } from '@nestjs/common';
 import { WalletController } from './wallet.controller';
-import { WalletService } from './wallet.service';
 import { WALLET_PACKAGE_NAME, WALLET_SERVICE_NAME } from './wallet.pb';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
@@ -20,6 +19,5 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     ]),
   ],
   controllers: [WalletController],
-  providers: [WalletService],
 })
 export class WalletModule {}
