@@ -37,6 +37,24 @@ export interface ValidationResponse {
   userId: string;
 }
 
+export interface GetUserByIdRequest {
+  id: string;
+}
+
+export interface GetUserByIdResponse {
+  status: number;
+  error: string[];
+  user: User | undefined;
+}
+
+export interface User {
+  id: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt?: string | undefined;
+}
+
 export const AUTH_PACKAGE_NAME = "auth";
 
 export interface AuthServiceClient {
@@ -45,6 +63,8 @@ export interface AuthServiceClient {
   signIn(request: SignInRequest): Observable<SignInResponse>;
 
   validation(request: ValidationRequest): Observable<ValidationResponse>;
+
+  getUserById(request: GetUserByIdRequest): Observable<GetUserByIdResponse>;
 }
 
 export interface AuthServiceController {
@@ -55,11 +75,15 @@ export interface AuthServiceController {
   validation(
     request: ValidationRequest,
   ): Promise<ValidationResponse> | Observable<ValidationResponse> | ValidationResponse;
+
+  getUserById(
+    request: GetUserByIdRequest,
+  ): Promise<GetUserByIdResponse> | Observable<GetUserByIdResponse> | GetUserByIdResponse;
 }
 
 export function AuthServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["signUp", "signIn", "validation"];
+    const grpcMethods: string[] = ["signUp", "signIn", "validation", "getUserById"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("AuthService", method)(constructor.prototype[method], method, descriptor);
