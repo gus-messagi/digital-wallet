@@ -8,3 +8,15 @@ export interface StatementDTO {
     operation: Operation;
   };
 }
+
+export interface GenerateStatementDTO {
+  userId: string;
+  maxDate: Date;
+}
+
+export interface StatementRecord {
+  amount: number;
+  balance: number;
+  operation: string;
+  date: string;
+}

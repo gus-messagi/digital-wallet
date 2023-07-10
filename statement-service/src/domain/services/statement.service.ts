@@ -1,5 +1,9 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { StatementDTO } from '../dtos/statement.dto';
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  GenerateStatementDTO,
+  StatementDTO,
+  StatementRecord,
+} from '../dtos/statement.dto';
 import {
   WALLET_SERVICE_NAME,
   WalletServiceClient,
@@ -10,21 +14,23 @@ import { StatementEntity } from '../entities/statement.entity';
 import { StatementImplRepository } from 'src/infrastructure/data/repositories/statement-impl.repository';
 import { StatementRepository } from '../repositories/statement.repository';
 import { Operation } from '../enums/transaction.enum';
+import { Err, Ok, Result } from 'ts-results';
+import { FileService } from './file.service';
+import { EmailService } from './email.service';
 
 @Injectable()
-export class StatementService implements OnModuleInit {
-  private walletService: WalletServiceClient;
-
+export class StatementService {
   @Inject(WALLET_SERVICE_NAME)
   private readonly client: ClientGrpc;
 
   @Inject(StatementImplRepository)
   private readonly repository: StatementRepository;
 
-  public onModuleInit(): void {
-    this.walletService =
-      this.client.getService<WalletServiceClient>(WALLET_SERVICE_NAME);
-  }
+  @Inject(FileService)
+  private readonly fileService: FileService;
+
+  @Inject(EmailService)
+  private readonly emailService: EmailService;
 
   private calculateAmount(
     currentAmount: number,
@@ -44,7 +50,9 @@ export class StatementService implements OnModuleInit {
 
   async create(statement: StatementDTO) {
     const { balance } = await firstValueFrom(
-      this.walletService.balance({ userId: statement.userId }),
+      this.client
+        .getService<WalletServiceClient>(WALLET_SERVICE_NAME)
+        .balance({ userId: statement.userId }),
     );
 
     const userBalance = Number(balance.toFixed(2));
@@ -62,5 +70,50 @@ export class StatementService implements OnModuleInit {
     }).unwrap();
 
     await this.repository.create(entity);
+  }
+
+  async generate(
+    filter: GenerateStatementDTO,
+    throughEmail = false,
+  ): Promise<Result<StatementRecord[], string[]>> {
+    const { error, items } = await firstValueFrom(
+      this.client
+        .getService<WalletServiceClient>(WALLET_SERVICE_NAME)
+        .getTransactions({
+          userId: filter.userId,
+          maxDate: filter.maxDate.toDateString(),
+        }),
+    );
+
+    if (error) {
+      return Err(error);
+    }
+
+    const mapIds = items.map(({ id }) => id);
+    const statements = await this.repository.findManyByTransactionIds(mapIds);
+
+    const formatted = statements.map((statement) => {
+      const transaction = items.find(
+        (item) => item.id === statement.transactionId,
+      );
+
+      return {
+        amount: transaction.amount,
+        balance: statement.currentAmount,
+        operation: transaction.operation,
+        date: transaction.createdAt,
+      };
+    });
+
+    if (!throughEmail) return Ok(formatted);
+
+    const content = this.fileService.create(formatted);
+
+    const attachment = {
+      filename: 'novotest.csv',
+      content,
+    };
+
+    await this.emailService.send('gustavo.ramos.messagi@gmail.com', attachment);
   }
 }

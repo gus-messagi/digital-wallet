@@ -35,12 +35,34 @@ export interface BalanceResponse {
   balance: number;
 }
 
+export interface GetTransactionsRequest {
+  userId: string;
+  maxDate: string;
+}
+
+export interface GetTransactionsResponse {
+  status: number;
+  error: string[];
+  items: TransactionItem[];
+}
+
+export interface TransactionItem {
+  id: string;
+  parentId: string;
+  userId: string;
+  operation: string;
+  amount: number;
+  createdAt: string;
+}
+
 export const WALLET_PACKAGE_NAME = "wallet";
 
 export interface WalletServiceClient {
   transaction(request: TransactionRequest): Observable<TransactionResponse>;
 
   balance(request: BalanceRequest): Observable<BalanceResponse>;
+
+  getTransactions(request: GetTransactionsRequest): Observable<GetTransactionsResponse>;
 }
 
 export interface WalletServiceController {
@@ -49,11 +71,15 @@ export interface WalletServiceController {
   ): Promise<TransactionResponse> | Observable<TransactionResponse> | TransactionResponse;
 
   balance(request: BalanceRequest): Promise<BalanceResponse> | Observable<BalanceResponse> | BalanceResponse;
+
+  getTransactions(
+    request: GetTransactionsRequest,
+  ): Promise<GetTransactionsResponse> | Observable<GetTransactionsResponse> | GetTransactionsResponse;
 }
 
 export function WalletServiceControllerMethods() {
   return function (constructor: Function) {
-    const grpcMethods: string[] = ["transaction", "balance"];
+    const grpcMethods: string[] = ["transaction", "balance", "getTransactions"];
     for (const method of grpcMethods) {
       const descriptor: any = Reflect.getOwnPropertyDescriptor(constructor.prototype, method);
       GrpcMethod("WalletService", method)(constructor.prototype[method], method, descriptor);

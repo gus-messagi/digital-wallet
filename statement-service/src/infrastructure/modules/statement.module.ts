@@ -6,6 +6,8 @@ import { WALLET_SERVICE_NAME, WALLET_PACKAGE_NAME } from '../protos/wallet.pb';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { StatementService } from 'src/domain/services/statement.service';
 import { StatementImplRepository } from '../data/repositories/statement-impl.repository';
+import { FileService } from 'src/domain/services/file.service';
+import { EmailService } from 'src/domain/services/email.service';
 
 @Module({
   imports: [
@@ -23,9 +25,28 @@ import { StatementImplRepository } from '../data/repositories/statement-impl.rep
         }),
         inject: [ConfigService],
       },
+      {
+        imports: [ConfigModule],
+        name: 'rabbitmq-module',
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('rabbitmqUrl')],
+            queue: configService.get<string>('statementQueue'),
+          },
+        }),
+        inject: [ConfigService],
+      },
     ]),
   ],
-  providers: [PrismaConnector, StatementService, StatementImplRepository],
+  providers: [
+    PrismaConnector,
+    StatementService,
+    StatementImplRepository,
+    FileService,
+    ConfigService,
+    EmailService,
+  ],
   controllers: [StatementController],
 })
 export class StatmentModule {}
