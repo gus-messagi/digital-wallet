@@ -8,6 +8,7 @@ import { StatementService } from 'src/domain/services/statement.service';
 import { StatementImplRepository } from '../data/repositories/statement-impl.repository';
 import { FileService } from 'src/domain/services/file.service';
 import { EmailService } from 'src/domain/services/email.service';
+import { AUTH_PACKAGE_NAME, AUTH_SERVICE_NAME } from '../protos/auth.pb';
 
 @Module({
   imports: [
@@ -21,6 +22,19 @@ import { EmailService } from 'src/domain/services/email.service';
             url: configService.get<string>('walletServiceUrl'),
             package: WALLET_PACKAGE_NAME,
             protoPath: 'node_modules/digital-wallet-proto/proto/wallet.proto',
+          },
+        }),
+        inject: [ConfigService],
+      },
+      {
+        name: AUTH_SERVICE_NAME,
+        imports: [ConfigModule],
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.GRPC,
+          options: {
+            url: configService.get<string>('authServiceUrl'),
+            package: AUTH_PACKAGE_NAME,
+            protoPath: 'node_modules/digital-wallet-proto/proto/auth.proto',
           },
         }),
         inject: [ConfigService],

@@ -17,11 +17,18 @@ import { Operation } from '../enums/transaction.enum';
 import { Err, Ok, Result } from 'ts-results';
 import { FileService } from './file.service';
 import { EmailService } from './email.service';
+import {
+  AUTH_SERVICE_NAME,
+  AuthServiceClient,
+} from 'src/infrastructure/protos/auth.pb';
 
 @Injectable()
 export class StatementService {
   @Inject(WALLET_SERVICE_NAME)
-  private readonly client: ClientGrpc;
+  private readonly walletClient: ClientGrpc;
+
+  @Inject(AUTH_SERVICE_NAME)
+  private readonly authClient: ClientGrpc;
 
   @Inject(StatementImplRepository)
   private readonly repository: StatementRepository;
@@ -50,7 +57,7 @@ export class StatementService {
 
   async create(statement: StatementDTO) {
     const { balance } = await firstValueFrom(
-      this.client
+      this.walletClient
         .getService<WalletServiceClient>(WALLET_SERVICE_NAME)
         .balance({ userId: statement.userId }),
     );
@@ -77,7 +84,7 @@ export class StatementService {
     throughEmail = false,
   ): Promise<Result<StatementRecord[], string[]>> {
     const { error, items } = await firstValueFrom(
-      this.client
+      this.walletClient
         .getService<WalletServiceClient>(WALLET_SERVICE_NAME)
         .getTransactions({
           userId: filter.userId,
@@ -107,6 +114,14 @@ export class StatementService {
 
     if (!throughEmail) return Ok(formatted);
 
+    const { user } = await firstValueFrom(
+      this.authClient
+        .getService<AuthServiceClient>(AUTH_SERVICE_NAME)
+        .getUserById({
+          id: filter.userId,
+        }),
+    );
+
     const content = this.fileService.create(formatted);
 
     const attachment = {
@@ -114,6 +129,6 @@ export class StatementService {
       content,
     };
 
-    await this.emailService.send('gustavo.ramos.messagi@gmail.com', attachment);
+    await this.emailService.send(user.email, attachment);
   }
 }
