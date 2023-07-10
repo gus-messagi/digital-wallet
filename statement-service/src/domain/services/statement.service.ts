@@ -98,10 +98,10 @@ export class StatementService {
       );
 
       return {
-        amount: transaction.amount,
-        balance: statement.currentAmount,
+        amount: `R$${transaction.amount.toFixed(2)}`,
+        balance: `R$${statement.currentAmount.toFixed(2)}`,
         operation: transaction.operation,
-        date: transaction.createdAt,
+        date: new Date(transaction.createdAt).toLocaleDateString('pt-BR'),
       };
     });
 
@@ -110,7 +110,7 @@ export class StatementService {
     const content = this.fileService.create(formatted);
 
     const attachment = {
-      filename: 'novotest.csv',
+      filename: 'statement.csv',
       content,
     };
 

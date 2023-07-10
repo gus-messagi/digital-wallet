@@ -15,8 +15,8 @@ export interface GenerateStatementDTO {
 }
 
 export interface StatementRecord {
-  amount: number;
-  balance: number;
+  amount: string;
+  balance: string;
   operation: string;
   date: string;
 }
