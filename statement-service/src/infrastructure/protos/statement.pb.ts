@@ -16,9 +16,10 @@ export interface GenerateStatementResponse {
 }
 
 export interface StatementItem {
-  amount: number;
-  balance: number;
+  amount: string;
+  balance: string;
   operation: string;
+  date: string;
 }
 
 export const STATEMENT_PACKAGE_NAME = "statement";

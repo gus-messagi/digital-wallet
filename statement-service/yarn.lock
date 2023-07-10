@@ -2429,7 +2429,7 @@ diff@^4.0.1:
 
 "digital-wallet-proto@git+https://github.com/gus-messagi/digital-wallet-proto.git":
   version "1.0.0"
-  resolved "git+https://github.com/gus-messagi/digital-wallet-proto.git#e03fed0a97e98715a3541bc2c47aa24e36c61d26"
+  resolved "git+https://github.com/gus-messagi/digital-wallet-proto.git#d1e8fd109a5eadae9b0e52b3d7fd6c83fb6b8d0d"
 
 dir-glob@^3.0.1:
   version "3.0.1"
