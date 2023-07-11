@@ -28,8 +28,9 @@ export class StatementController {
     console.log(`Data received: ${JSON.stringify(data)}`);
     const channel = context.getChannelRef();
     const originalMessage = context.getMessage();
+    const eventId = originalMessage.properties.messageId;
 
-    await this.service.create(data);
+    await this.service.create(data, eventId);
 
     channel.ack(originalMessage);
   }

@@ -9,6 +9,7 @@ import { StatementImplRepository } from '../data/repositories/statement-impl.rep
 import { FileService } from 'src/domain/services/file.service';
 import { EmailService } from 'src/domain/services/email.service';
 import { AUTH_PACKAGE_NAME, AUTH_SERVICE_NAME } from '../protos/auth.pb';
+import { EventImplRepository } from '../data/repositories/event-impl.repository';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { AUTH_PACKAGE_NAME, AUTH_SERVICE_NAME } from '../protos/auth.pb';
     FileService,
     ConfigService,
     EmailService,
+    EventImplRepository,
   ],
   controllers: [StatementController],
 })

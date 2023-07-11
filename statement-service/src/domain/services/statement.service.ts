@@ -21,6 +21,8 @@ import {
   AUTH_SERVICE_NAME,
   AuthServiceClient,
 } from 'src/infrastructure/protos/auth.pb';
+import { EventImplRepository } from 'src/infrastructure/data/repositories/event-impl.repository';
+import { EventRepository } from '../repositories/event.repository';
 
 @Injectable()
 export class StatementService {
@@ -29,6 +31,9 @@ export class StatementService {
 
   @Inject(AUTH_SERVICE_NAME)
   private readonly authClient: ClientGrpc;
+
+  @Inject(EventImplRepository)
+  private readonly eventRepository: EventRepository;
 
   @Inject(StatementImplRepository)
   private readonly repository: StatementRepository;
@@ -55,7 +60,13 @@ export class StatementService {
     return currentAmount - transactionAmount;
   }
 
-  async create(statement: StatementDTO) {
+  async create(statement: StatementDTO, eventId: string) {
+    if (eventId) {
+      const existsEvent = await this.eventRepository.existsEvent(eventId);
+
+      if (existsEvent) return Err('Evento duplicado');
+    }
+
     const { balance } = await firstValueFrom(
       this.walletClient
         .getService<WalletServiceClient>(WALLET_SERVICE_NAME)
@@ -76,7 +87,11 @@ export class StatementService {
       currentAmount,
     }).unwrap();
 
-    await this.repository.create(entity);
+    const statementCreated = await this.repository.create(entity);
+
+    if (eventId) {
+      await this.eventRepository.create(eventId, statementCreated.id);
+    }
   }
 
   async generate(

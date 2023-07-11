@@ -1,10 +1,11 @@
+import 'dotenv/config';
 import * as fs from 'fs';
 import { join } from 'path';
 import { Client } from 'pg';
+import { environment } from '../../config/environment.config';
 
 const client = new Client({
-  connectionString:
-    'postgres://postgres:mysecretpassword@localhost:5432/statement',
+  connectionString: environment().databaseUrl,
 });
 
 client.connect().then(async () => {

@@ -17,5 +17,16 @@ model Statement {
   lastAmount          Float                    @map("last_amount")
   currentAmount       Float                    @map("current_amount")
 
+  event Event? @relation("fk_statements")
+
   @@map("statements")
+}
+
+model Event {
+  eventId       String @id @db.Uuid()     @map("event_id")
+  statementId   String     @db.Uuid()     @map("statement_id") @unique
+
+  statement   Statement  @relation("fk_statements", fields: [statementId], references: [id])
+
+  @@map("events")
 }
