@@ -10,8 +10,8 @@ export class EmailService {
     await this.service.sendMail({
       to,
       subject: 'Your statement',
-      text: 'Hello World',
-      attachments: [attachment]
+      text: 'Oh! here is a statement history.',
+      attachments: [attachment],
     });
   }
 }
