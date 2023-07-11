@@ -30,5 +30,16 @@ model Transaction {
   transaction         Transaction?  @relation("fk_parent_transaction")
   parentTransaction   Transaction?  @relation("fk_parent_transaction", fields: [parentTransactionId], references: [id])
 
+  event Event? @relation("fk_transactions")
+
   @@map("transactions")
+}
+
+model Event {
+  eventId       String @id @db.Uuid()     @map("event_id")
+  transactionId String     @db.Uuid()     @map("transaction_id") @unique
+
+  transaction   Transaction  @relation("fk_transactions", fields: [transactionId], references: [id])
+
+  @@map("events")
 }

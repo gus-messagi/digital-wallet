@@ -27,6 +27,7 @@ export interface TransactionResponse {
 
 export interface BalanceRequest {
   userId: string;
+  lastTransactionId?: string | undefined;
 }
 
 export interface BalanceResponse {

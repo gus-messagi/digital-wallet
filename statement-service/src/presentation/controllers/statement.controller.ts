@@ -49,7 +49,7 @@ export class StatementController {
       maxDate: new Date(data.maxDate),
     };
 
-    const statementData = await this.service.generateData(mapToDomain, true);
+    const statementData = await this.service.generateData(mapToDomain);
 
     if (!statementData.err) {
       await this.service.handleFile(data.userId, statementData.unwrap());

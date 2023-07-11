@@ -40,6 +40,7 @@
     "class-validator": "^0.14.0",
     "csv-stringify": "^6.4.0",
     "digital-wallet-proto": "git+https://github.com/gus-messagi/digital-wallet-proto.git",
+    "dotenv": "^16.3.1",
     "nodemailer": "^6.9.3",
     "pg": "^8.11.1",
     "reflect-metadata": "^0.1.13",

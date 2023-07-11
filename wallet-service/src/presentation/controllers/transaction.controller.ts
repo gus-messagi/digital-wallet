@@ -26,7 +26,7 @@ export class TransactionController {
   private readonly service: TransactionService;
 
   @EventPattern('transaction_emitted')
-  public async handleStatementRequested(
+  public async handleTransactionEmitted(
     @Payload() data: TransactionEventDTO,
     @Ctx() context: RmqContext,
   ) {

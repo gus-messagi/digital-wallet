@@ -54,10 +54,10 @@ export class StatementService {
     }
 
     if ([Operation.DEPOSIT, Operation.REVERSAL].includes(operation)) {
-      return currentAmount + transactionAmount;
+      return currentAmount - transactionAmount;
     }
 
-    return currentAmount - transactionAmount;
+    return currentAmount + transactionAmount;
   }
 
   async create(statement: StatementDTO, eventId: string) {
@@ -70,11 +70,18 @@ export class StatementService {
     const { balance } = await firstValueFrom(
       this.walletClient
         .getService<WalletServiceClient>(WALLET_SERVICE_NAME)
-        .balance({ userId: statement.userId }),
+        .balance({
+          userId: statement.userId,
+        }),
     );
 
+    console.log({ balance });
+
     const userBalance = Number(balance.toFixed(2));
-    const currentAmount = this.calculateAmount(
+
+    console.log({ userBalance });
+
+    const lastAmount = this.calculateAmount(
       userBalance,
       statement.transaction.amount,
       statement.transaction.operation,
@@ -83,8 +90,8 @@ export class StatementService {
     const entity = StatementEntity.create({
       userId: statement.userId,
       transactionId: statement.transaction.id,
-      lastAmount: userBalance,
-      currentAmount,
+      currentAmount: userBalance,
+      lastAmount,
     }).unwrap();
 
     const statementCreated = await this.repository.create(entity);
@@ -96,7 +103,6 @@ export class StatementService {
 
   async generateData(
     filter: GenerateStatementDTO,
-    throughEmail = false,
   ): Promise<Result<StatementRecord[], string[]>> {
     const { error, items } = await firstValueFrom(
       this.walletClient
@@ -114,18 +120,20 @@ export class StatementService {
     const mapIds = items.map(({ id }) => id);
     const statements = await this.repository.findManyByTransactionIds(mapIds);
 
-    const formatted = statements.map((statement) => {
-      const transaction = items.find(
-        (item) => item.id === statement.transactionId,
-      );
+    const formatted = statements
+      .map((statement) => {
+        const transaction = items.find(
+          (item) => item.id === statement.transactionId,
+        );
 
-      return {
-        amount: `R$${transaction.amount.toFixed(2)}`,
-        balance: `R$${statement.currentAmount.toFixed(2)}`,
-        operation: transaction.operation,
-        date: new Date(transaction.createdAt).toLocaleDateString('pt-BR'),
-      };
-    });
+        return {
+          amount: `R$${transaction.amount.toFixed(2)}`,
+          balance: `R$${statement.currentAmount.toFixed(2)}`,
+          operation: transaction.operation,
+          date: new Date(transaction.createdAt).toLocaleDateString('pt-BR'),
+        };
+      })
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     return Ok(formatted);
   }
@@ -138,6 +146,8 @@ export class StatementService {
           id: userId,
         }),
     );
+
+    console.log({ user })
 
     const content = this.fileService.create(data);
 
