@@ -64,7 +64,7 @@ export class StatementService {
     if (eventId) {
       const existsEvent = await this.eventRepository.existsEvent(eventId);
 
-      if (existsEvent) return Err('Evento duplicado');
+      if (existsEvent) return Err('Event duplicated');
     }
 
     const { balance } = await firstValueFrom(
@@ -75,12 +75,7 @@ export class StatementService {
         }),
     );
 
-    console.log({ balance });
-
     const userBalance = Number(balance.toFixed(2));
-
-    console.log({ userBalance });
-
     const lastAmount = this.calculateAmount(
       userBalance,
       statement.transaction.amount,
@@ -99,6 +94,8 @@ export class StatementService {
     if (eventId) {
       await this.eventRepository.create(eventId, statementCreated.id);
     }
+
+    return Ok(statementCreated);
   }
 
   async generateData(
@@ -146,8 +143,6 @@ export class StatementService {
           id: userId,
         }),
     );
-
-    console.log({ user })
 
     const content = this.fileService.create(data);
 
