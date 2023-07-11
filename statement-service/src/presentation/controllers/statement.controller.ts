@@ -49,7 +49,11 @@ export class StatementController {
       maxDate: new Date(data.maxDate),
     };
 
-    await this.service.generate(mapToDomain, true);
+    const statementData = await this.service.generateData(mapToDomain, true);
+
+    if (!statementData.err) {
+      await this.service.handleFile(data.userId, statementData.unwrap());
+    }
 
     channel.ack(originalMessage);
   }
@@ -76,7 +80,7 @@ export class StatementController {
       maxDate,
     };
 
-    const response = await this.service.generate(mapToDomain);
+    const response = await this.service.generateData(mapToDomain);
 
     if (response.err) {
       return {

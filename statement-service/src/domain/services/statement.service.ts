@@ -94,7 +94,7 @@ export class StatementService {
     }
   }
 
-  async generate(
+  async generateData(
     filter: GenerateStatementDTO,
     throughEmail = false,
   ): Promise<Result<StatementRecord[], string[]>> {
@@ -127,17 +127,19 @@ export class StatementService {
       };
     });
 
-    if (!throughEmail) return Ok(formatted);
+    return Ok(formatted);
+  }
 
+  async handleFile(userId: string, data: StatementRecord[]) {
     const { user } = await firstValueFrom(
       this.authClient
         .getService<AuthServiceClient>(AUTH_SERVICE_NAME)
         .getUserById({
-          id: filter.userId,
+          id: userId,
         }),
     );
 
-    const content = this.fileService.create(formatted);
+    const content = this.fileService.create(data);
 
     const attachment = {
       filename: 'statement.csv',
