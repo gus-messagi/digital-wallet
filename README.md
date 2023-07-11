@@ -55,4 +55,6 @@ To created a transaction we can handle it in two ways: through API request and b
 
 ### [ :computer: ] Statement generation flowchart
 
+If the service is requested to generate a statement history, we first see if the range days are greater than 15 days, from that moment we decide how we will handle. Below we have an flowchart:
+
 ![Statement generation flowchart](./docs/generate_statement.drawio.png)
