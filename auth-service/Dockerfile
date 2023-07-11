@@ -11,4 +11,6 @@ RUN yarn proto:auth
 RUN yarn prisma generate
 RUN yarn db:migrate
 
+EXPOSE 50051
+
 CMD yarn run build && yarn run start:prod

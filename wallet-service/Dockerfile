@@ -8,4 +8,6 @@ RUN npm install -g protoc
 RUN yarn install
 RUN yarn proto:wallet
 
+EXPOSE 50052
+
 CMD yarn run build && yarn run start:prod
