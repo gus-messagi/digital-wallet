@@ -17,7 +17,7 @@ export class WalletController {
     const response = await this.service.getBalance(payload.userId);
 
     return {
-      status: HttpStatus.CREATED,
+      status: HttpStatus.OK,
       error: null,
       balance: response,
     };

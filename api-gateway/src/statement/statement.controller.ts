@@ -12,7 +12,13 @@ import { ClientGrpc } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Request, Response } from 'express';
+import { ApiBody, ApiCookieAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  GenerateStatementDTO,
+  GenerateStatementResponseDTO,
+} from './statement.dtos';
 
+@ApiTags('Statement Service')
 @Controller('statement')
 export class StatementController implements OnModuleInit {
   public serviceClient: StatementServiceClient;
@@ -27,8 +33,11 @@ export class StatementController implements OnModuleInit {
   }
 
   @Post('generate')
+  @ApiCookieAuth()
+  @ApiBody({ type: GenerateStatementDTO })
+  @ApiResponse({ status: 200, type: GenerateStatementResponseDTO })
   @UseGuards(AuthGuard)
-  async transaction(
+  async generateStatement(
     @Req() request: Request & { user: string },
     @Res() response: Response,
   ): Promise<Response> {

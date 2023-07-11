@@ -13,7 +13,10 @@ import { firstValueFrom } from 'rxjs';
 import { ClientGrpc } from '@nestjs/microservices';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { Request, Response } from 'express';
+import { ApiBody, ApiCookieAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { BalanceResponseDTO, TransactionRequestDTO } from './wallet.dto';
 
+@ApiTags('Wallet Service')
 @Controller('wallet')
 export class WalletController implements OnModuleInit {
   public serviceClient: WalletServiceClient;
@@ -27,6 +30,8 @@ export class WalletController implements OnModuleInit {
   }
 
   @Post('transaction')
+  @ApiCookieAuth()
+  @ApiBody({ type: TransactionRequestDTO })
   @UseGuards(AuthGuard)
   async transaction(
     @Req() request: Request & { user: string },
@@ -43,6 +48,8 @@ export class WalletController implements OnModuleInit {
   }
 
   @Get('balance')
+  @ApiCookieAuth()
+  @ApiResponse({ status: 200, type: BalanceResponseDTO })
   @UseGuards(AuthGuard)
   async balance(
     @Req() request: Request & { user: string },
