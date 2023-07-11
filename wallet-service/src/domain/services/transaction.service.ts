@@ -12,7 +12,10 @@ import { Err, Ok, Result } from 'ts-results';
 import { CancellationStrategy } from '../strategies/cancellation.strategy';
 import { WalletService } from './wallet.service';
 import { ReversalStrategy } from '../strategies/reversal.strategy';
-import { ClientProxy } from '@nestjs/microservices';
+import { ClientProxy, RmqRecordBuilder } from '@nestjs/microservices';
+import * as crypto from 'crypto';
+import { EventImplRepository } from 'src/infrastructure/data/repositories/event-impl.repository';
+import { EventRepository } from '../repositories/event.repository';
 
 @Injectable()
 export class TransactionService {
@@ -21,6 +24,9 @@ export class TransactionService {
 
   @Inject(TransactionImplRepository)
   private readonly repository: TransactionRepository;
+
+  @Inject(EventImplRepository)
+  private readonly eventRepository: EventRepository;
 
   @Inject(WalletService)
   private readonly walletService: WalletService;
@@ -31,9 +37,33 @@ export class TransactionService {
     this.strategy = strategy;
   }
 
+  private emitTransactionCreatedEvent(transaction: TransactionEntity) {
+    const data = {
+      userId: transaction.userId,
+      transaction: {
+        id: transaction.id,
+        amount: transaction.amount,
+        operation: transaction.operation,
+      },
+    };
+
+    const record = new RmqRecordBuilder(data)
+      .setOptions({ messageId: crypto.randomUUID() })
+      .build();
+
+    this.client.emit('transaction_created', record);
+  }
+
   async operation(
     transaction: TransactionDTO,
+    eventId?: string,
   ): Promise<Result<TransactionEntity, string>> {
+    if (eventId) {
+      const existsEvent = await this.eventRepository.existsEvent(eventId);
+
+      if (existsEvent) return Err('Evento duplicado');
+    }
+
     const entityResult = TransactionEntity.create(transaction);
     const transactionEntity = entityResult.unwrap();
 
@@ -57,14 +87,11 @@ export class TransactionService {
 
     const transactionCreated = result.unwrap();
 
-    this.client.emit('transaction_created', {
-      userId: transactionCreated.userId,
-      transaction: {
-        id: transactionCreated.id,
-        amount: transactionCreated.amount,
-        operation: transactionCreated.operation,
-      },
-    });
+    if (eventId) {
+      await this.eventRepository.create(eventId, transactionCreated.id);
+    }
+
+    this.emitTransactionCreatedEvent(transactionCreated);
 
     return result;
   }

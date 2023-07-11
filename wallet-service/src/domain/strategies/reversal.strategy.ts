@@ -3,19 +3,21 @@ import { Strategy } from './interfaces/strategy.interface';
 import { TransactionRepository } from '../repositories/transaction.repository';
 import { CreateTransactionDTO } from '../dtos/transaction.dto';
 import { Err, Ok, Result } from 'ts-results';
-import { WalletService } from '../services/wallet.service';
+import { Inject } from '@nestjs/common';
+import { TransactionImplRepository } from 'src/infrastructure/data/repositories/transaction-impl.repository';
 
 export class ReversalStrategy implements Strategy {
   constructor(
+    @Inject(TransactionImplRepository)
     private readonly transactionRepository: TransactionRepository,
-    private readonly walletService: WalletService,
   ) {}
 
   async handle(
     transaction: TransactionEntity,
   ): Promise<Result<TransactionEntity, string>> {
+    const transactionIdToReverse = transaction.parentId;
     const alreadyReversed = !!(await this.transactionRepository.findByParentId(
-      transaction.parentId,
+      transactionIdToReverse,
     ));
 
     if (alreadyReversed) {
@@ -23,12 +25,12 @@ export class ReversalStrategy implements Strategy {
     }
 
     const transactionFound = await this.transactionRepository.findById(
-      transaction.parentId,
+      transactionIdToReverse,
     );
 
     const mapToRepository: CreateTransactionDTO = {
       userId: transaction.userId,
-      parentTransactionId: transaction.parentId,
+      parentTransactionId: transactionIdToReverse,
       amount: transactionFound.amount,
       operation: transaction.operation,
       createdAt: transaction.createdAt,

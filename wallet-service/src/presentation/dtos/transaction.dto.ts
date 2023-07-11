@@ -12,6 +12,15 @@ import {
   TransactionRequest,
 } from 'src/infrastructure/protos/wallet.pb';
 
+export interface TransactionEventDTO {
+  userId: string;
+  transaction: {
+    id?: string;
+    amount?: number;
+    operation: Operation;
+  };
+}
+
 export class TransactionRequestDTO implements TransactionRequest {
   @IsUUID()
   @IsNotEmpty()

@@ -6,6 +6,7 @@ import { TransactionImplRepository } from '../data/repositories/transaction-impl
 import { WalletService } from 'src/domain/services/wallet.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { EventImplRepository } from '../data/repositories/event-impl.repository';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     TransactionService,
     TransactionImplRepository,
     WalletService,
+    EventImplRepository,
   ],
 })
 export class TransactionModule {}

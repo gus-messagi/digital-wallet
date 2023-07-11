@@ -4,15 +4,21 @@ import { TransactionRepository } from '../repositories/transaction.repository';
 import { CreateTransactionDTO } from '../dtos/transaction.dto';
 import { Err, Ok, Result } from 'ts-results';
 import { Operation } from '../enums/transaction.enum';
+import { Inject } from '@nestjs/common';
+import { TransactionImplRepository } from 'src/infrastructure/data/repositories/transaction-impl.repository';
 
 export class CancellationStrategy implements Strategy {
-  constructor(private readonly transactionRepository: TransactionRepository) {}
+  constructor(
+    @Inject(TransactionImplRepository)
+    private readonly transactionRepository: TransactionRepository,
+  ) {}
 
   async handle(
     transaction: TransactionEntity,
   ): Promise<Result<TransactionEntity, string>> {
+    const transactionIdToCancel = transaction.parentId;
     const transactionFound = await this.transactionRepository.findById(
-      transaction.parentId,
+      transactionIdToCancel,
     );
 
     const cannotCancel = [Operation.DEPOSIT, Operation.WITHDRAW].includes(

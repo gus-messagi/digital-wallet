@@ -9,6 +9,7 @@ import { PurchaseStrategy } from '../../strategies/purchase.strategy';
 import { ReversalStrategy } from '../../strategies/reversal.strategy';
 import { CreateTransactionDTO } from '../../dtos/transaction.dto';
 import { CancellationStrategy } from '../../strategies/cancellation.strategy';
+import { EventImplRepository } from 'src/infrastructure/data/repositories/event-impl.repository';
 
 jest.mock('../../strategies/deposit.strategy', () => ({
   DepositStrategy: jest.fn().mockImplementationOnce(() => ({
@@ -94,6 +95,13 @@ describe('TransactionService', () => {
           useValue: {
             create: jest.fn(),
             findBalanceByUserId: jest.fn(),
+          },
+        },
+        {
+          provide: EventImplRepository,
+          useValue: {
+            existsEvent: jest.fn(),
+            create: jest.fn(),
           },
         },
       ],

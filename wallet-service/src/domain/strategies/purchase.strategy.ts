@@ -4,10 +4,14 @@ import { TransactionRepository } from '../repositories/transaction.repository';
 import { CreateTransactionDTO } from '../dtos/transaction.dto';
 import { Err, Ok, Result } from 'ts-results';
 import { WalletService } from '../services/wallet.service';
+import { Inject } from '@nestjs/common';
+import { TransactionImplRepository } from 'src/infrastructure/data/repositories/transaction-impl.repository';
 
 export class PurchaseStrategy implements Strategy {
   constructor(
+    @Inject(TransactionImplRepository)
     private readonly transactionRepository: TransactionRepository,
+    @Inject(WalletService)
     private readonly walletService: WalletService,
   ) {}
 
